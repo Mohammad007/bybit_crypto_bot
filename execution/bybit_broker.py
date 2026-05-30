@@ -94,7 +94,16 @@ class BybitBroker(BaseBroker):
                 log.error(f"bybit auth failed: {bal.get('retMsg')}")
                 return False
         except Exception as exc:
-            log.error(f"bybit connect failed: {exc}")
+            msg = str(exc).lower()
+            if "from the usa" in msg or "403" in msg or "cloudfront" in msg:
+                log.error(
+                    "bybit connect failed: GEO-BLOCKED. Bybit refuses requests from "
+                    "US IP addresses (Railway/most US clouds default to a US region). "
+                    "Fix: deploy in a non-US region (Singapore / EU) or use a VPN/proxy "
+                    "from a Bybit-allowed country. Original: %s" % exc
+                )
+            else:
+                log.error(f"bybit connect failed: {exc}")
             return False
 
         env = (
