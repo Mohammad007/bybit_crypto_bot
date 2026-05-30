@@ -1,0 +1,21 @@
+# Railway deployment config.
+#
+# Set these env vars in the Railway dashboard before deploy:
+#   MODE=demo
+#   BYBIT_API_KEY=...
+#   BYBIT_API_SECRET=...
+#   BYBIT_DEMO=true
+#   BYBIT_LEVERAGE=5
+#   TELEGRAM_BOT_TOKEN=...
+#   TELEGRAM_CHAT_ID=...
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r requirements.txt"
+
+[deploy]
+startCommand = "python main.py start --no-dashboard"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+healthcheckPath = ""
+healthcheckTimeout = 0

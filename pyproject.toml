@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bybit-crypto-breakout-bot"
+version = "3.0.0"
+description = "BYBIT CRYPTO BREAKOUT BOT – top-30 USDT-perp multi-symbol scanner (Bybit V5)"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Quant Desk" }]
+license = { text = "Proprietary" }
+
+dependencies = [
+    "python-dotenv>=1.0.1",
+    "pyyaml>=6.0.2",
+    "pydantic>=2.7.0",
+    "typer[all]>=0.12.3",
+    "rich>=13.7.1",
+    "numpy>=1.26.4",
+    "pandas>=2.2.2",
+    "SQLAlchemy>=2.0.30",
+    "loguru>=0.7.2",
+    "httpx>=0.27.0",
+    "pybit>=5.8.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.2.0", "pytest-asyncio>=0.23.7"]
+
+[project.scripts]
+crypto-bot = "main:app"
+
+# Flat layout – each top-level folder is its own package
+[tool.setuptools]
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "config*",
+    "core*",
+    "dashboard*",
+    "database*",
+    "execution*",
+    "indicators*",
+    "risk_management*",
+    "strategies*",
+    "utils*",
+]
+exclude = ["tests*", ".venv*", "logs*", "models*"]
+
+[tool.setuptools.package-data]
+config = ["*.yaml"]

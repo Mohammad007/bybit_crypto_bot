@@ -1,0 +1,139 @@
+# ============================================================
+# BYBIT CRYPTO TRENDLINE BREAKOUT BOT – main configuration
+# Market : Bybit V5 USDT Perpetuals (linear), demo trading
+# Mode   : multi-symbol scanner over the top 30 crypto by volume
+# Strategy: Trendline Break + Retest + Confirmation (percentage-based)
+# Indicators: EMA20, EMA50, RSI, ATR (only)
+# ============================================================
+
+bot:
+  name: "BYBIT CRYPTO BREAKOUT BOT"
+  version: "3.0.0"
+  refresh_seconds: 2               # sleep between scan cycles (seconds)
+
+market:
+  point_value: 0.01                # display only; real tick size read per-symbol
+  spread_max_points: 5000          # generous cap; crypto spreads vary by coin
+
+# --------------------------------------------------------------
+# Universe – which symbols the bot is allowed to trade.
+# auto_top30: when true the bot replaces `symbols` with the live top-30
+# Bybit USDT perps ranked by 24h turnover at startup. The static list below
+# is the fallback (used in paper mode / when offline) and a sane default.
+# --------------------------------------------------------------
+universe:
+  auto_top30: false                # false = use the fixed `symbols` list below
+  count: 30                        # cap; the actual list length below governs
+  exclude:                         # stable/peg pairs never make trading sense
+    - USDCUSDT
+    - USDEUSDT
+    - TUSDUSDT
+    - DAIUSDT
+  symbols:                         # BTC + 5 altcoins
+    - BTCUSDT
+    - HYPEUSDT
+    - SOLUSDT
+    - XRPUSDT
+    - BNBUSDT
+    - YFIUSDT
+    - LITEUSDT
+    - SPYUSDT
+    - XMRUSDT
+    - DOTUSDT
+    - TRUMPUSDT
+    - ZECUSDT
+    - TRXUSDT
+    - BCHUSDT
+    - NEOUSDT
+    - FILUSDT
+    - ATOMUSDT
+    - AAVEUSDT
+    - UNIUSDT
+    - GRTUSDT
+    - LRCUSDT
+    - SNXUSDT
+    - MKRUSDT
+    - COMPUSDT
+    - CRVUSDT
+    - SUSHIUSDT
+    - MATICUSDT
+    - AVAXUSDT
+    - NEARUSDT
+    - EGLDUSDT
+    - ICPUSDT
+    - ALICEUSDT
+    - FTMUSDT
+    
+
+# --------------------------------------------------------------
+# Scanner – how the multi-symbol engine ranks & opens trades each tick.
+# --------------------------------------------------------------
+scanner:
+  max_new_per_tick: 2              # open at most N new trades per scan cycle
+  rank_by: "confidence"            # confidence | turnover
+  one_position_per_symbol: true    # never stack a 2nd position on a held coin
+
+# Crypto trades 24/7 – the strategy uses only M15 by default.
+timeframes:
+  itf:   ["M15"]
+
+indicators:
+  ema_fast: 20
+  ema_mid:  50
+  rsi_period: 14
+  atr_period: 14
+
+risk:
+  # ----- core sizing & guard rails -----
+  risk_per_trade_pct: 1.0
+  max_daily_loss_pct: 5.0
+  max_weekly_loss_pct: 12.0
+  max_concurrent_trades: 5         # scanner can hold up to N coins at once
+  max_trades_per_day: 40
+  # ----- pending order lifecycle -----
+  pending_expiry_minutes: 15
+
+  # ============================================================
+  # EARLY-CLOSE FEATURES – ALL DISABLED.
+  # Trades close ONLY on TP or SL. Re-enable by restoring values.
+  # ============================================================
+  break_even_at_R:    9999
+  trailing_at_R:      9999
+  partial_take_R:     9999
+  partial_close_pct:  0
+  quick_close_usd:    0
+  quick_close_pips:   0
+  time_stop_minutes:  0
+  time_stop_min_R:    0.3
+
+execution:
+  slippage_points: 10
+  order_link_prefix: "CRYPTO_BRK"
+  use_market_orders: true
+
+strategies:
+  active: "trendline_breakout"
+  available:
+    - trendline_breakout
+
+  trendline_breakout:
+    order_type:   "market"  # 'market' = enter on breakout confirmation
+                            # 'stop'   = pending conditional order at breakout level
+    # ----- FIXED-USDT risk per trade -----
+    # Position size is auto-calculated so EVERY trade loses ~sl_usdt at SL and
+    # gains ~tp_usdt at TP, on any coin. (Exchange qty rounding makes it approximate.)
+    sl_usdt:     5.0        # USDT loss when the stop-loss is hit
+    tp_usdt:     10.0       # USDT profit when the take-profit is hit
+    # sl_pct sets WHERE the stop sits (price distance). Tighter % = bigger qty.
+    sl_pct:      1.0        # stop-loss price distance as % of entry price
+    atr_pct_min: 0.30       # only trade when ATR is > this % of price
+    body_pct_min: 0.10      # confirmation candle min body as % of price (market mode)
+    rsi_bull:    55         # bull trend needs RSI above
+    rsi_bear:    45         # bear trend needs RSI below
+    avoid_asian: false      # crypto is 24/7 – never skip a session
+
+dashboard:
+  theme: "dark"
+  show_chart: true
+  chart_candles: 60
+  scan_rows: 18            # how many scanner rows to show in the table
